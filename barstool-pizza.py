@@ -2,11 +2,24 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 
-pageNumbers = range(1,66)
+def scrape_data():
 
-data_rows = []
+    pageNumbers = range(1,66)
 
-for pageNumber in pageNumbers:
+    data_rows = []
+
+    for pageNumber in pageNumbers:
+        data_row = get_page_data(pageNumber)
+        data_rows.extend(data_row)
+
+    # Storing the data in a pandas DataFrame and saving it to a CSV file
+    df = pd.DataFrame(data_rows)
+    df.to_csv('names-locations.csv', index=False)
+
+
+def get_page_data(pageNumber):
+    data_rows = []
+    # URL for the page to scrape
     pageURL = "https://onebite.app/reviews/dave?page=" + str(pageNumber) + "&minScore=0&maxScore=10"
     page = requests.get(pageURL)
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -21,16 +34,16 @@ for pageNumber in pageNumbers:
         title = titles[i].text.strip()
         data_rows.append({'Location': location, 'Title': title})
         #print(f"Location: {location}, Title: {title}")
-
+        
     print(f"Page {pageNumber} processed.")
 
-# Storing the data in a pandas DataFrame and saving it to a CSV file
-df = pd.DataFrame(data_rows)
-df.to_csv('names-locations.csv', index=False)
+    return data_rows
 
 def main():
-    return 0;
+    scrape_data()
+    return 0
 
 
 if __name__ == "__main__":
+    main()
     print("Data extraction complete. CSV file created: names-locations.csv")
